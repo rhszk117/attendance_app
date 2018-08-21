@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+   <base target="_top">
+   <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1"> 
+   <title>TimeCard</title>
+   <!-- Bootstrap CSS-->
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <!-- jQuery -->
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+   <!-- Bootstrap JavaScript-->
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <script type="application/javascript">
+   
+     // 日付形式チェック
+     function dateCheck(date){     
+       if (date.match(/^(\d{4})\/(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])$/)){
+         return true;
+       }
+       return false;
+     }
+     
+     // 月形式チェック
+     function monthCheck(month){     
+       if (month.match(/^(0[1-9]|1[0-2])$/)){
+         return true;
+       }
+       return false;
+     }   
+     
+     // 時間形式チェック
+     function timeCheck(time){     
+       if (time.match(/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/)){
+         return true;
+       }
+       return false;
+     }
+     
+     
+     // 出勤登録
+     function punchInFormSend(p) {
+       if(($('#time').val() != "")&&($('#date').val() != "")&&($('#month').val() != "")){
+       
+         // 登録処理
+         google.script.run.withSuccessHandler().punchIn(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>おはようございます！ 出勤時間を打刻しました</div>");
+       }
+     }
+     
+     
+     // 退勤登録
+     function punchOutFormSend(p) {
+       if(($('#time').val() != "")&&($('#date').val() != "")&&($('#month').val() != "")){
+         
+         // 登録処理
+         google.script.run.withSuccessHandler().punchOut(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>今日もお疲れさまでしました！ 退勤時間を打刻しました</div>");
+       }
+     }
+     
+     
+     // 備考登録
+     function commentInsertFormSend(p) {
+       if(($('#comment_date').val() != "")&&($('#comment').val() != "")&&($('#month').val() != "")){
+       
+         // 入力形式チェック
+         var check = dateCheck($('#comment_date').val());
+         if(check == false){
+         
+           // 前のアラート表示を削除して、新しいアラート表示を出力
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>日付はYYYY/MM/DD形式で入力してください</div>");
+           return;
+         }
+         
+         // 登録処理
+         google.script.run.withSuccessHandler().commentInsert(p.parentNode);
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>登録が完了しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     // 備考削除
+     function commentDeleteFormSend(p) {
+       if(($('#comment_date').val() != "")&&($('#month').val() != "")){
+       
+         // 入力形式チェック
+         var check = dateCheck($('#comment_date').val());       
+         if(check == false){
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>日付はYYYY/MM/DD形式で入力してください</div>");
+           return;
+         }
+         
+         // 削除処理
+         google.script.run.withSuccessHandler().commentDelete(p.parentNode);
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>削除が完了しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     // 勤怠区分登録処理
+     function categoryInsertFormSend(p) {
+       if(($('#category_date').val() != "")&&($('#category').val() != null)&&($('#month').val() != "")){
+       
+         // 入力形式チェック
+         var check = dateCheck($('#category_date').val());       
+         if(check == false){
+         
+           // 前のアラート表示を削除して、新しいアラート表示を出力
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>日付はYYYY/MM/DD形式で入力してください</div>");
+           return;
+         }
+         
+         // 登録処理
+         google.script.run.withSuccessHandler().categoryInsert(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>登録が完了しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     // 勤怠区分削除処理
+     function categoryDeleteFormSend(p) {
+       if(($('#category_date').val() != "")&&($('#month').val() != "")){
+       
+         // 入力形式チェック
+         var check = dateCheck($('#category_date').val());       
+         if(check == false){
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>日付はYYYY/MM/DD形式で入力してください</div>");
+           return;
+         }
+         
+         // 削除処理
+         google.script.run.withSuccessHandler().categoryDelete(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>削除が完了しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     // 休憩時間更新処理
+     function breakUpdateFormSend(p) {
+       if(($('#break_date').val() != "")&&($('#break_time').val() != "")){
+       
+         // 入力形式チェック
+         var check = dateCheck($('#break_date').val());       
+         if(check == false){
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>日付はYYYY/MM/DD形式で入力してください</div>");
+           return;
+         }
+         
+         // 入力形式チェック
+         var check = timeCheck($('#break_time').val());
+         if(check == false){
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>時間はHH:mm形式で入力してください</div>");
+           return;
+         }
+         
+         // 登録処理
+         google.script.run.withSuccessHandler().breakUpdate(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>変更が完了しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     // 休憩時間削除処理
+     function breakDeleteFormSend(p) {
+       if($('#break_date').val() != ""){
+       
+         // 入力形式チェック
+         var check = dateCheck($('#break_date').val());       
+         if(check == false){
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>日付はYYYY/MM/DD形式で入力してください</div>");
+           return;
+         }
+         
+         // 削除処理
+         google.script.run.withSuccessHandler().breakDelete(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>変更が完了しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     // 勤務表出力処理
+     function createRosterFormSend(p) {
+       if(($('#roster_month').val() != "")&&($('#roster_company').val() != "")){
+       
+         // 入力形式チェック
+         var check = monthCheck($('#roster_month').val());
+         if(check == false){
+         
+           // 前のアラート表示を削除して、新しいアラート表示を出力
+           $("#check_info").empty();
+           $("#check_info").append("<div class='alert alert-danger' role='alert'>対象月はMM形式で入力してください</div>");
+           return;
+         }
+         
+         // 登録処理
+         google.script.run.withSuccessHandler().createRoster(p.parentNode);
+         
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-success' role='alert'>マイドライブ直下にファイル（勤務表_yyyyMMddHHmm）を出力しました</div>");
+         
+       }else{
+       
+         // 前のアラート表示を削除して、新しいアラート表示を出力
+         $("#check_info").empty();
+         $("#check_info").append("<div class='alert alert-danger' role='alert'>必須項目を入力してください</div>");
+       }
+     }
+     
+     
+     
+     // 打刻メニュー押下時の画面表示
+     $(function(){
+       $('#menu_punch').click(function(){
+         $("#check_info").empty();
+         $('#area_punch').show();
+         $('#button_punchIn').attr('type','button');
+         $('#button_punchOut').attr('type','button');
+         $('#area_comment').hide();
+         $('#button_comment_insert').attr('type','hidden');
+         $('#button_comment_delete').attr('type','hidden');
+         $('#area_category').hide();
+         $('#button_category_insert').attr('type','hidden');
+         $('#button_category_delete').attr('type','hidden');
+         $('#area_correct').hide();
+         $('#button_correct_order').attr('type','hidden');
+         $('#button_break_update').attr('type','hidden');
+         $('#button_break_delete').attr('type','hidden');
+         $('#area_records').hide();
+         $('#area_three_months_records').show();
+         $('#area_otherr').hide();
+         $('#button_roster').attr('type','hidden');
+       });
+     });
+     
+     
+     // 備考登録メニュー押下時の表示
+     $(function(){
+       $('#menu_comment').click(function(){
+         $("#check_info").empty();
+         $('#area_punch').hide();
+         $('#button_punchIn').attr('type','hidden');
+         $('#button_punchOut').attr('type','hidden');
+         $('#area_comment').show();
+         $('#button_comment_insert').attr('type','button');
+         $('#button_comment_delete').attr('type','button');
+         $('#area_category').hide();
+         $('#button_category_insert').attr('type','hidden');
+         $('#button_category_delete').attr('type','hidden');
+         $('#area_correct').hide();
+         $('#button_correct_order').attr('type','hidden');
+         $('#button_break_update').attr('type','hidden');
+         $('#button_break_delete').attr('type','hidden');
+         $('#area_records').hide();
+         $('#area_three_months_records').show();
+         $('#area_other').hide();
+         $('#button_roster').attr('type','hidden');
+       });
+     });
+    
+    
+     // 勤怠区分メニュー押下時の表示
+     $(function(){
+       $('#menu_category').click(function(){
+         $("#check_info").empty();
+         $('#area_punch').hide();
+         $('#button_punchIn').attr('type','hidden');
+         $('#button_punchOut').attr('type','hidden');
+         $('#area_comment').hide();
+         $('#button_comment_insert').attr('type','hidden');
+         $('#button_comment_delete').attr('type','hidden');
+         $('#area_category').show();
+         $('#button_category_insert').attr('type','button');
+         $('#button_category_delete').attr('type','button');
+         $('#area_correct').hide();
+         $('#button_correct_order').attr('type','hidden');
+         $('#button_break_update').attr('type','hidden');
+         $('#button_break_delete').attr('type','hidden');
+         $('#area_records').hide();
+         $('#area_three_months_records').show();
+         $('#area_other').hide();
+         $('#button_roster').attr('type','hidden');
+       });
+     });
+     
+     
+     // 打刻修正メニュー押下時の表示
+     $(function(){
+       $('#menu_correct').click(function(){
+         $("#check_info").empty();
+         $('#area_punch').hide();
+         $('#button_punchIn').attr('type','hidden');
+         $('#button_punchOut').attr('type','hidden');
+         $('#area_comment').hide();
+         $('#button_comment_insert').attr('type','hidden');
+         $('#button_comment_delete').attr('type','hidden');
+         $('#area_category').hide();
+         $('#button_category_insert').attr('type','hidden');
+         $('#button_category_delete').attr('type','hidden');
+         $('#area_correct').show();
+         $('#button_correct_order').attr('type','button');
+         $('#button_break_update').attr('type','button');
+         $('#button_break_delete').attr('type','button');
+         $('#area_records').hide();
+         $('#area_three_months_records').show();
+         $('#area_other').hide();
+         $('#button_roster').attr('type','hidden');
+       });
+     });
+     
+     
+     // 稼働実績メニュー押下時の表示
+     $(function(){
+       $('#menu_records').click(function(){
+         $("#check_info").empty();
+         $('#area_punch').hide();
+         $('#button_punchIn').attr('type','hidden');
+         $('#button_punchOut').attr('type','hidden');
+         $('#area_comment').hide();
+         $('#button_comment_insert').attr('type','hidden');
+         $('#button_comment_delete').attr('type','hidden');
+         $('#area_category').hide();
+         $('#button_category_insert').attr('type','hidden');
+         $('#button_category_delete').attr('type','hidden');
+         $('#area_correct').hide();
+         $('#button_correct_order').attr('type','hidden');
+         $('#button_break_update').attr('type','hidden');
+         $('#button_break_delete').attr('type','hidden');
+         $('#area_records').show();
+         $('#area_three_months_records').hide();
+         $('#area_other').hide();
+         $('#button_roster').attr('type','hidden');
+       });
+     });
+     
+          
+     // その他メニュー押下時の表示
+     $(function(){
+       $('#menu_other').click(function(){
+         $("#check_info").empty();
+         $('#area_punch').hide();
+         $('#button_punchIn').attr('type','hidden');
+         $('#button_punchOut').attr('type','hidden');
+         $('#area_comment').hide();
+         $('#button_comment_insert').attr('type','hidden');
+         $('#button_comment_delete').attr('type','hidden');
+         $('#area_category').hide();
+         $('#button_category_insert').attr('type','hidden');
+         $('#button_category_delete').attr('type','hidden');
+         $('#area_correct').hide();
+         $('#button_correct_order').attr('type','hidden');
+         $('#button_break_update').attr('type','hidden');
+         $('#button_break_delete').attr('type','hidden');
+         $('#area_records').hide();
+         $('#area_three_months_records').hide();
+         $('#area_other').show();
+         $('#button_roster').attr('type','button');
+       });
+     });
+     
+     // 打刻一覧メニュー当月ボタン押下時の表示
+     $(function(){
+       $('#menu_record_on').click(function(){
+         $('#area_record_previous').css('display', 'none');
+         $('#area_record_on').css('display', 'block');
+         $('#area_record_next').css('display', 'none');
+       });
+     });
+     
+     
+     // 打刻一覧メニューNextボタン押下時の表示
+     $(function(){
+       $('#menu_record_next').click(function(){
+         $('#area_record_previous').css('display', 'none');
+         $('#area_record_on').css('display', 'none');
+         $('#area_record_next').css('display', 'block');
+       });
+     });
+     
+     
+     // 打刻一覧メニューPreviousボタン押下時の表示
+     $(function(){
+       $('#menu_record_previous').click(function(){
+         $('#area_record_previous').css('display', 'block');
+         $('#area_record_on').css('display', 'none');
+         $('#area_record_next').css('display', 'none');
+       });
+     });
+     
+     
+     // 日時表示
+     $(function(){
+       setInterval(function(){
+         var now = new Date();
+         year = toDD(now.getFullYear());
+         month = toDD(now.getMonth()+1);
+         date = toDD(now.getDate());
+         hour = toDD(now.getHours());
+         minute = toDD(now.getMinutes());
+         second = toDD(now.getSeconds());
+         $('#date').val(year +"/"+ month + "/" + date);
+         $('#month').val(month);
+         $('#time').val(hour +":"+ minute);
+       },1000);
+     });
+     var toDD = function(num){
+     num += "";
+     if(num.length === 1){num = "0" + num;}
+       return num;
+     };
+
+   </script>
+  </head>   
+  <body>
+  
+  <!-- header --> 
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <div class="navbar-header">
+      
+        <!-- 横幅が狭い時に出るハンバーガーボタン -->
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        
+        <!-- ホームへ戻る -->
+        <a class="navbar-brand" href="modify_1"><strong>TimeCard</strong></a>
+      </div>
+
+      <!-- メニュー項目 -->
+      <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li id="menu_punch"><a>打刻</a></li>
+          <li id="menu_comment"><a>備考登録</a></li>
+          <li id="menu_category"><a>勤怠区分登録</a></li>
+          <li id="menu_correct"><a>打刻修正</a></li>
+          <li id="menu_records"><a>稼働実績</a></li>
+          <li id="menu_other"><a>その他</a></li>
+          <!-- 稼働実績（未実装：年間の稼働実績一覧表示） -->
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+  <!-- -->
+  
+  <div class="container">
+  
+    <!-- エラーダイアログ表示エリア -->
+    <div id="check_info"></div>
+  
+　 　<form>
+   
+    <div id="area_user"><!-- ユーザー情報表示エリア -->
+      <div class="page-header">
+        <h4>ユーザー情報</h4>
+      </div>
+      
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <label>氏名</label>
+　　　　        <?
+          var id = 'modify_2';
+          var sheet_name = 'USER';
+          var spreadSheet = SpreadsheetApp.openById(id);
+          var sheet = spreadSheet.getSheetByName(sheet_name);
+          var dat = sheet.getDataRange().getValues();
+          var user_name = Session.getActiveUser();
+
+          for(var i=1;i<dat.length;i++){
+            if(dat[i][0] == user_name){
+              var range = sheet.getRange(i+1, 3);
+              var value = range.getValue();
+            }
+          }
+          output.append('<input class="form-control" id="user_name" type="text" name="user_name" value=' + value + ' readonly>');
+         ?>
+         </div>
+        
+         <div class="col-sm-6">
+           <label>ID</label>
+           <input class="form-control" id="user_id" type="text" name="user_id" value=<?= Session.getActiveUser(); ?> readonly>
+         </div>
+      </div>
+    </div><!-- <div id="area_user"> end -->
+    
+    
+    <div id="area_punch"><!-- 打刻表示エリア -->
+      <div class="page-header">
+        <h4>打刻</h4>
+      </div>
+       
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <label>日付</label>
+　　　　        <input class="form-control" id="date" type="text" name="date" readonly>
+          <input class="form-control" id="month" type="hidden" name="month">
+        </div>
+        <div class="col-sm-6">
+          <label>時刻</label>
+          <input class="form-control" id="time" type="text" name="time" readonly>
+    　   </div>
+      </div>
+    
+    </div><!-- <div id="area_break"> end -->
+    <input id="button_punchIn" class="btn btn-info" type="button" name="btn" onclick="punchInFormSend(this);" value="出勤">
+    <input id="button_punchOut" class="btn btn-primary" type="button" name="btn" onclick="punchOutFormSend(this);" value="退勤">
+    
+    <div id="area_correct" hidden><!-- 打刻修正エリア -->
+      <div class="page-header">
+        <h4>打刻修正</h4>
+      </div>
+      
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <button id="button_correct_order" class="btn btn-info" type="hidden" name="btn"><a style="text-decoration:none; color:white;" href="http://google.com" target="_blank">打刻修正申請</a></button>
+        </div>
+      </div>
+    
+      <div class="page-header">
+        <h4>休憩時間修正</h4>
+      </div>
+      
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <label>日付　[必須]</label>
+          <input class="form-control" id="break_date" type="text" name="break_date"　value="" placeholder="YYYY/MM/DD">
+        </div>
+        <div class="col-sm-6">
+          <label>時刻 [登録の場合は必須]</label>
+          　<input class="form-control" id="break_time" type="text" name="break_time"　value="" placeholder="HH:mm">
+    　   </div>
+      </div>
+    
+    </div><!-- <div id="area_correct"> end -->
+    <input id="button_break_update" class="btn btn-info" type="hidden" name="btn" onclick="breakUpdateFormSend(this);" value="修正">
+    <input id="button_break_delete" class="btn btn-primary" type="hidden" name="btn" onclick="breakDeleteFormSend(this);" value="削除">
+    
+    <div id="area_comment" hidden><!-- 備考登録表示エリア -->
+      <div class="page-header">
+        <h4>備考登録</h4>
+      </div>
+    
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <label>日付　[必須]</label>
+          <input class="form-control" id="comment_date" type="text" name="comment_date"　value="" placeholder="YYYY/MM/DD">
+       　  　<textarea class="form-control" rows="4" id="comment" name="comment" placeholder="備考内容を入力してください　[登録の場合は必須]"></textarea>
+        </div>
+      </div>
+      
+    </div><!-- <div id="area_comment"> end -->
+    <input id="button_comment_insert" class="btn btn-info" type="hidden" name="btn" onclick="commentInsertFormSend(this);" value="登録">
+    <input id="button_comment_delete" class="btn btn-primary" type="hidden" name="btn" onclick="commentDeleteFormSend(this);" value="削除">
+    
+    <div id="area_category" hidden><!-- 勤怠区分表示エリア -->
+      <div class="page-header">
+        <h4>勤怠区分登録　</h4>
+      </div>
+    
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <label>日付　[必須]</label>
+          <input class="form-control" id="category_date" type="text" name="category_date"　value="" placeholder="YYYY/MM/DD">
+        </div>
+        
+        <div class="col-sm-6">
+          <label>勤怠区分　[登録の場合は必須]</label>
+            <select class="form-control" id="category" name="category">
+           　　  <option value='' disabled selected style='display:none;'>選択してください</option>
+              <option value="出張">出張</option>
+              <option value="有給休暇（全休）">有給休暇（全休）</option>
+              <option value="有給休暇（午前半休）">有給休暇（午前半休）</option>
+              <option value="有給休暇（午後半休）">有給休暇（午後半休）</option>
+              <option value="欠勤">欠勤</option>
+              <option value="振替休日">振替休日</option>
+              <option value="その他">その他</option>
+            </select>
+        </div>
+      </div>
+      
+    </div><!-- <div id="area_category" end -->
+    <input id="button_category_insert" class="btn btn-info" type="hidden" name="btn" onclick="categoryInsertFormSend(this);" value="登録">
+    <input id="button_category_delete" class="btn btn-primary" type="hidden" name="btn" onclick="categoryDeleteFormSend(this);" value="削除">
+
+
+    <div id="area_other" hidden><!-- その他エリア -->
+      <div class="page-header">
+        <h4>マニュアル</h4>
+      </div>
+      
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <button id="button_manual" class="btn btn-info" type="hidden" name="btn"><a style="text-decoration:none; color:white;" href="https://docs.google.com/document/d/1BsKyP41vKlJ0DmPsXf3iGn7ZbdTvo_3wr-ypmUpfDJA/edit" target="_blank">マニュアル</a></button>
+        </div>
+      </div>
+    
+      <div class="page-header">
+        <h4>勤務表出力</h4>
+      </div>
+      
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <label>対象月　[必須]</label>
+          <input class="form-control" id="roster_month" type="text" name="roster_month"　value="" placeholder="MM">
+        </div>
+        <div class="col-sm-6">
+          <label>会社名　[必須]</label>
+          　<input class="form-control" id="roster_company" type="text" name="roster_company"　value="">
+    　   </div>
+      </div>
+    
+    </div><!-- <div id="area_correct"> end -->
+    <input id="button_roster" class="btn btn-info" type="hidden" name="btn" onclick="createRosterFormSend(this);" value="勤務表出力">
+
+  </form>
+
+  <div id="area_records" hidden><!-- 年間の稼働実績 -->
+  
+    <div class="page-header">
+      <h4>稼働実績</h4>
+    </div>
+
+    <table class="table"> 
+    <caption><strong><?= Utilities.formatDate(new Date(),'Asia/Tokyo','yyyy'); ?></strong></caption>
+      <thead>
+       　<tr class="active">
+       　  <th>月</th>
+           <th>稼働日数</th>
+            <!-- <th>稼働時間</th> -->
+           <th>遅刻回数</th>
+           <th>残業日数</th>
+     　　</tr>
+     　</thead>
+     　<tbody> 
+      <?
+       // 対象ファイル情報取得
+       var id = 'modify_2';
+       var sheet_name = 'USER';
+       var spreadSheet = SpreadsheetApp.openById(id);
+       var sheet = spreadSheet.getSheetByName(sheet_name);
+       var dat = sheet.getDataRange().getValues();
+       var user_name = Session.getActiveUser();
+       for(var i=1;i<dat.length;i++){
+         if(dat[i][0] == user_name){
+           var range = sheet.getRange(i+1, 2);
+           var value = range.getValue();
+         }
+       }
+       var spreadsheet = SpreadsheetApp.openById(value);
+        
+       // 01-12月のシートから対象データを取得し、一覧を作成する
+       for (var m=0;m<12;m++){
+         // 一覧表示データ取得
+         var n = m+1;
+         var sheet_name = String(n);
+         if ((n != 10) && (n != 11) && (n != 12)){
+           sheet_name = '0' + String(n);
+         }
+         var sheet = spreadsheet.getSheetByName(sheet_name);
+         var list_sum_data = sheet.getDataRange().getValues();
+         var list_sum_operation = list_sum_data[1][13];
+         var list_sum_date = String(list_sum_data[1][14]);
+         var list_sum_late_count = String(list_sum_data[1][15]);
+         var list_sum_over_count = String(list_sum_data[1][16]);
+      　　
+         // 一覧表示
+         output.append('<tr>');
+         output.append('<td>' + sheet_name + '</td>');
+         
+         if (list_sum_date != ''){ 
+           output.append('<td>' + list_sum_date + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+                  
+         //if (list_sum_operation != ''){
+         //  output.append('<td>' + list_sum_operation + '</td>');
+         //} else {
+         //  output.append('<td>' + '' + '</td>');
+         //}
+         
+         if (list_sum_late_count != ''){ 
+           output.append('<td>' + list_sum_late_count + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+          if (list_sum_over_count != ''){ 
+           output.append('<td>' + list_sum_over_count + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         output.append('</tr>');
+        }
+      ?>
+    </tbody>
+    </table>
+    
+    </div><!-- <div id="area_records"> end -->
+
+
+  <div id="area_three_months_records">
+  
+    <div class="page-header">
+      <h4>打刻一覧</h4>
+    </div>
+    
+     <div class="pull-right">
+      <nav aria-label="...">
+        <ul class="pagination">
+          <li id="menu_record_previous" class="page-item"><a class="page-link">Previous</a></li>
+          <li id="menu_record_on" class="page-item"><a class="page-link"><?= Utilities.formatDate(new Date(),'Asia/Tokyo','yyyy/MM'); ?><span class="sr-only">(current)</span></a></li>
+          <li id="menu_record_next" class="page-item"><a class="page-link">Next</a></li>
+        </ul>
+      </nav>
+    </div>
+    
+    <div id="area_record_on" display="block"><!-- 当月分の打刻一覧 -->
+     
+    <table class="table"> 
+    <caption><strong><?= Utilities.formatDate(new Date(),'Asia/Tokyo','yyyy/MM'); ?></strong></caption>
+      <thead>
+       　<tr class="active">
+       　  <th>日付</th>
+          <th>曜日</th>
+          <th>祝日</th>
+          <th>出勤時刻</th>
+          <th>出勤区分</th>
+          <th>退勤時刻</th>
+          <th>退勤区分</th>
+          <th>休憩時間</th>
+          <th>稼働時間</th>
+          <th>勤怠区分</th>
+          <th>備考</th>
+     　  </tr>
+     　</thead>
+     　<tbody> 
+      <?
+       var id = 'modify_2';
+       var sheet_name = 'USER';
+       var spreadSheet = SpreadsheetApp.openById(id);
+       var sheet = spreadSheet.getSheetByName(sheet_name);
+       var dat = sheet.getDataRange().getValues();
+       var user_name = Session.getActiveUser();
+
+       for(var i=1;i<dat.length;i++){
+         if(dat[i][0] == user_name){
+           var range = sheet.getRange(i+1, 2);
+           var value = range.getValue();
+         }
+       }
+    
+       var spreadsheet = SpreadsheetApp.openById(value);
+       var sheet_name = Utilities.formatDate(new Date(),'Asia/Tokyo','MM');
+       var sheet = spreadsheet.getSheetByName(sheet_name);
+       var list_data = sheet.getDataRange().getValues();
+       var list_data_length = sheet.getRange('A:A').getValues().filter(String).length;
+       
+       // 一覧表示
+       for(var i=1;i<(list_data_length-1);i++){
+       
+         // 取得データ格納
+         var data_date = list_data[i][0];
+         var data_week = list_data[i][1];
+         var data_holiday = list_data[i][2];
+         var data_punchIn_time = list_data[i][5];
+         var data_punchIn_category = list_data[i][8];
+         var data_punchOut_time = list_data[i][6];
+         var data_punchOut_category = list_data[i][9];
+         var data_break_time = list_data[i][7];
+         var data_total = list_data[i][12];
+         var data_category = list_data[i][10];
+         var data_comment = list_data[i][11];
+       
+         // 日曜日と祝日の場合、行の背景を赤色にする
+    　　　   if ((data_week == '日')|| (data_holiday != '')　){
+           output.append('<tr class="danger">');
+         } else {
+           output.append('<tr>');
+         }
+         
+         // 日付
+         if (data_date != ''){
+           var date = Utilities.formatDate(data_date,'Asia/Tokyo','dd'); 
+           output.append('<td>' + date + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 曜日
+         if (data_week != ''){
+           output.append('<td>' + data_week + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 祝日
+         if (data_holiday != ''){ 
+           output.append('<td>' + data_holiday + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 出勤時刻
+         if (data_punchIn_time != ''){
+           var punchIn_time = Utilities.formatDate(data_punchIn_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + punchIn_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         //　 出勤区分
+         if (data_punchIn_category != ''){
+           output.append('<td>' + data_punchIn_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 退勤時刻
+         if (data_punchOut_time != ''){
+           var punchOut_time = Utilities.formatDate(data_punchOut_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + punchOut_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 退勤区分
+         if (data_punchOut_category != ''){
+           output.append('<td>' + data_punchOut_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 休憩時間
+         if (data_break_time != ''){
+           var break_time = Utilities.formatDate(data_break_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + break_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 稼働時間
+         if (data_total != ''){
+           var total = Utilities.formatDate(data_total,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + total + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 勤怠区分
+         if (data_category != ''){
+           output.append('<td>' + data_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+                  
+         // 備考
+         if (data_comment != ''){
+           output.append('<td>' + data_comment + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         output.append('</tr>');
+        }
+      ?>
+    </tbody>
+    </table>
+    
+    </div><!-- <div id="area_record_on"> end -->
+
+    <div id="area_record_next" display="none" hidden><!-- 翌月分の打刻一覧 -->
+     
+    <table class="table">
+     <?
+      var today = new Date();
+      var year = String(today.getYear());
+      var month = String(today.getMonth()+1);
+      var next_month = '';
+      if (month == '12'){
+         next_month = '01';
+    　　　 } else {
+         next_month = '0' + String(today.getMonth()+2);
+       }
+       output.append('<caption><strong>'+ year + '/' + next_month + '</strong></caption>');
+      ?>
+      <thead>
+       　<tr class="active">
+       　  <th>日付</th>
+          <th>曜日</th>
+          <th>祝日</th>
+          <th>出勤時刻</th>
+          <th>出勤区分</th>
+          <th>退勤時刻</th>
+          <th>退勤区分</th>
+          <th>休憩時間</th>
+          <th>稼働時間</th>
+          <th>勤怠区分</th>
+          <th>備考</th>
+     　  </tr>
+     　</thead>
+     　<tbody> 
+      <?
+       var id = 'modify_2';
+       var sheet_name = 'USER';
+       var spreadSheet = SpreadsheetApp.openById(id);
+       var sheet = spreadSheet.getSheetByName(sheet_name);
+       var dat = sheet.getDataRange().getValues();
+       var user_name = Session.getActiveUser();
+
+       for(var i=1;i<dat.length;i++){
+         if(dat[i][0] == user_name){
+           var range = sheet.getRange(i+1, 2);
+           var value = range.getValue();
+         }
+       }
+    
+      var today = new Date();
+      var year = String(today.getYear());
+      var month = String(today.getMonth()+1);
+      var next_month = '';
+      if (month == '12'){
+         next_month = '01';
+    　　　 } else {
+         next_month = '0' + String(today.getMonth()+2);
+       }
+       var spreadsheet = SpreadsheetApp.openById(value);
+       var sheet_name = next_month
+       var sheet = spreadsheet.getSheetByName(sheet_name);
+       var list_data = sheet.getDataRange().getValues();
+       var list_data_length = sheet.getRange('A:A').getValues().filter(String).length;
+       
+       // 一覧表示
+       for(var i=1;i<(list_data_length-1);i++){
+       
+         // 取得データ格納
+         var data_date = list_data[i][0]
+         var data_week = list_data[i][1]
+         var data_holiday = list_data[i][2]
+         var data_punchIn_time = list_data[i][5]
+         var data_punchIn_category = list_data[i][8]
+         var data_punchOut_time = list_data[i][6]
+         var data_punchOut_category = list_data[i][9]
+         var data_break_time = list_data[i][7]
+         var data_total = list_data[i][12]
+         var data_category = list_data[i][10]
+         var data_comment = list_data[i][11]
+       
+         // 日曜日と祝日の場合、行の背景を赤色にする
+    　　　   if ((data_week == '日')|| (data_holiday != '')　){
+           output.append('<tr class="danger">');
+         } else {
+           output.append('<tr>');
+         }
+         
+         // 日付
+         if (data_date != ''){
+           var date = Utilities.formatDate(data_date,'Asia/Tokyo','dd'); 
+           output.append('<td>' + date + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 曜日
+         if (data_week != ''){
+           output.append('<td>' + data_week + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 祝日
+         if (data_holiday != ''){ 
+           output.append('<td>' + data_holiday + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 出勤時刻
+         if (data_punchIn_time != ''){
+           var punchIn_time = Utilities.formatDate(data_punchIn_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + punchIn_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         //　 出勤区分
+         if (data_punchIn_category != ''){
+           output.append('<td>' + data_punchIn_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 退勤時刻
+         if (data_punchOut_time != ''){
+           var punchOut_time = Utilities.formatDate(data_punchOut_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + punchOut_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 退勤区分
+         if (data_punchOut_category != ''){
+           output.append('<td>' + data_punchOut_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 休憩時間
+         if (data_break_time != ''){
+           var break_time = Utilities.formatDate(data_break_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + break_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 稼働時間
+         if (data_total != ''){
+           var total = Utilities.formatDate(data_total,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + total + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 勤怠区分
+         if (data_category != ''){
+           output.append('<td>' + data_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+                  
+         // 備考
+         if (data_comment != ''){
+           output.append('<td>' + data_comment + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         output.append('</tr>');
+        }
+      ?>
+    </tbody>
+    </table>
+    
+    </div><!-- <div id="area_record_next"> end -->
+
+
+    <div id="area_record_previous" display="none" hidden><!-- 前月分の打刻一覧 -->
+
+    <table class="table"> 
+    　　<?
+      var today = new Date();
+      var year = String(today.getYear());
+      var month = String(today.getMonth()+1);
+      var previous_month = '';
+      if (month == '1') {
+           previous_month = '12';
+      } else if ((month == '11')||(month == '12')){
+           previous_month = month-1;
+    　　　 } else {
+         previous_month = '0' + (month-1);
+       }
+       output.append('<caption><strong>'+ year + '/' + previous_month + '</strong></caption>');
+      ?>
+      <thead>
+       　<tr class="active">
+       　  <th>日付</th>
+          <th>曜日</th>
+          <th>祝日</th>
+          <th>出勤時刻</th>
+          <th>出勤区分</th>
+          <th>退勤時刻</th>
+          <th>退勤区分</th>
+          <th>休憩時間</th>
+          <th>稼働時間</th>
+          <th>勤怠区分</th>
+          <th>備考</th>
+     　  </tr>
+     　</thead>
+     　<tbody> 
+      <?
+       var id = 'modify_2';
+       var sheet_name = 'USER';
+       var spreadSheet = SpreadsheetApp.openById(id);
+       var sheet = spreadSheet.getSheetByName(sheet_name);
+       var dat = sheet.getDataRange().getValues();
+       var user_name = Session.getActiveUser();
+
+       for(var i=1;i<dat.length;i++){
+         if(dat[i][0] == user_name){
+           var range = sheet.getRange(i+1, 2);
+           var value = range.getValue();
+         }
+       }
+    
+       var spreadsheet = SpreadsheetApp.openById(value);
+       var today = new Date();
+       var month = String(today.getMonth()+1);
+       var previous_month = '';
+       if (month == '1') {
+         previous_month = '12';
+       } else if ((month == '11')||(month == '12')){
+         previous_month = String(today.getMonth());
+    　  　} else {
+         previous_month = '0' + (String(today.getMonth()));
+       }
+       var sheet_name = previous_month;
+       var sheet = spreadsheet.getSheetByName(sheet_name);
+       var list_data = sheet.getDataRange().getValues();
+       var list_data_length = sheet.getRange('A:A').getValues().filter(String).length;
+      
+       // 一覧表示
+       for(var i=1;i<(list_data_length-1);i++){
+       
+         // 取得データ格納
+         var data_date = list_data[i][0]
+         var data_week = list_data[i][1]
+         var data_holiday = list_data[i][2]
+         var data_punchIn_time = list_data[i][5]
+         var data_punchIn_category = list_data[i][8]
+         var data_punchOut_time = list_data[i][6]
+         var data_punchOut_category = list_data[i][9]
+         var data_break_time = list_data[i][7]
+         var data_total = list_data[i][12]
+         var data_category = list_data[i][10]
+         var data_comment = list_data[i][11]
+       
+         // 日曜日と祝日の場合、行の背景を赤色にする
+    　　　   if ((data_week == '日')|| (data_holiday != '')　){
+           output.append('<tr class="danger">');
+         } else {
+           output.append('<tr>');
+         }
+         
+         // 日付
+         if (data_date != ''){
+           var date = Utilities.formatDate(data_date,'Asia/Tokyo','dd'); 
+           output.append('<td>' + date + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 曜日
+         if (data_week != ''){
+           output.append('<td>' + data_week + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 祝日
+         if (data_holiday != ''){ 
+           output.append('<td>' + data_holiday + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 出勤時刻
+         if (data_punchIn_time != ''){
+           var punchIn_time = Utilities.formatDate(data_punchIn_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + punchIn_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         //　 出勤区分
+         if (data_punchIn_category != ''){
+           output.append('<td>' + data_punchIn_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 退勤時刻
+         if (data_punchOut_time != ''){
+           var punchOut_time = Utilities.formatDate(data_punchOut_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + punchOut_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 退勤区分
+         if (data_punchOut_category != ''){
+           output.append('<td>' + data_punchOut_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 休憩時間
+         if (data_break_time != ''){
+           var break_time = Utilities.formatDate(data_break_time,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + break_time + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 稼働時間
+         if (data_total != ''){
+           var total = Utilities.formatDate(data_total,'Asia/Tokyo',"HH:mm"); 
+           output.append('<td>' + total + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         // 勤怠区分
+         if (data_category != ''){
+           output.append('<td>' + data_category + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+                  
+         // 備考
+         if (data_comment != ''){
+           output.append('<td>' + data_comment + '</td>');
+         } else {
+           output.append('<td>' + '' + '</td>');
+         }
+         
+         output.append('</tr>');
+        }
+      ?>
+    </tbody>
+    </table>
+    
+    </div><!-- <div id="area_record_previous"> end -->
+    
+    </div><!-- <div id="area_three_months_records"> -->
+    
+    </div><!-- <div class="container"> end -->
+ </body>
+</html>
+
